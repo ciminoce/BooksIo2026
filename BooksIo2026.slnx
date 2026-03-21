@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="BooksIo2026.Consola/BooksIo2026.Consola.csproj" />
+  <Project Path="BooksIo2026.Data/BooksIo2026.Data.csproj" />
+  <Project Path="BooksIo2026.Entities/BooksIo2026.Entities.csproj" />
+</Solution>
