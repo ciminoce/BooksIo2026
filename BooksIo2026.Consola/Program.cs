@@ -1,12 +1,14 @@
-﻿using BooksIo2026.Service.DTOs.Author;
+﻿using BooksIo2026.IoC;
+using BooksIo2026.Service.DTOs.Author;
 using BooksIo2026.Service.Interfaces;
 using BooksIo2026.Service.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BooksIo2026.Consola
 {
     internal class Program
     {
-        static IAuthorService _service = new AuthorService();
+        static IServiceProvider provider = DependencyInyectionContainer.Configure();
         static void Main(string[] args)
         {
             do
@@ -35,54 +37,58 @@ namespace BooksIo2026.Consola
 
         private static void AuthorsMenu()
         {
-            do
+            using (var scoped=provider.CreateScope())
             {
-                Console.Clear();
-                Console.WriteLine("Author's Manager");
-                Console.WriteLine("1. List of Authors");
-                Console.WriteLine("2. Add an Author");
-                Console.WriteLine("3. Delete an Author");
-                Console.WriteLine("4. Update an Author");
-
-                Console.WriteLine("0. Back to Main Menu");
-                Console.Write("Select an option:");
-                var opcion = Console.ReadLine();
-                switch (opcion)
+                var service=scoped.ServiceProvider.GetRequiredService<IAuthorService>();
+                do
                 {
-                    case "1":
-                        ListAuthors();
-                        break;
-                    case "2":
-                        AddAuthor();
-                        break;
-                    case "3":
-                        DeleteAuthor();
-                        break;
-                    case "4":
-                        UpdateAuthor();
-                        break;
-                    case "0":
-                        Console.WriteLine("Exiting...");
-                        return;
-                    default:
-                        break;
-                }
+                    Console.Clear();
+                    Console.WriteLine("Author's Manager");
+                    Console.WriteLine("1. List of Authors");
+                    Console.WriteLine("2. Add an Author");
+                    Console.WriteLine("3. Delete an Author");
+                    Console.WriteLine("4. Update an Author");
+
+                    Console.WriteLine("0. Back to Main Menu");
+                    Console.Write("Select an option:");
+                    var opcion = Console.ReadLine();
+                    switch (opcion)
+                    {
+                        case "1":
+                            ListAuthors(service);
+                            break;
+                        case "2":
+                            AddAuthor(service);
+                            break;
+                        case "3":
+                            DeleteAuthor(service);
+                            break;
+                        case "4":
+                            UpdateAuthor(service);
+                            break;
+                        case "0":
+                            Console.WriteLine("Exiting...");
+                            return;
+                        default:
+                            break;
+                    }
 
 
-            } while (true);
+                } while (true);
 
+            }
         }
 
-        private static void UpdateAuthor()
+        private static void UpdateAuthor(IAuthorService service)
         {
             Console.Clear();
             Console.WriteLine("Update an Author");
-            ShowAuthors();
+            ShowAuthors(service);
             Console.Write("Select an ID to update:");
 
             var authorId = int.Parse(Console.ReadLine()!);
 
-            var authorToUpdate = _service.GetForUpdate(authorId);
+            var authorToUpdate = service.GetForUpdate(authorId);
             if (authorToUpdate != null)
             {
                 Console.WriteLine($"Author to Update: {authorToUpdate.FirstName} {authorToUpdate.LastName}");
@@ -106,7 +112,7 @@ namespace BooksIo2026.Consola
                     authorToUpdate.FirstName = newFirstName;
                     authorToUpdate.LastName = newLastName;
 
-                    var result = _service.Update(authorToUpdate);
+                    var result = service.Update(authorToUpdate);
                     if (!result.Success)
                     {
                         foreach (var error in result.Errors)
@@ -133,23 +139,23 @@ namespace BooksIo2026.Consola
             Console.ReadLine();
         }
 
-        private static void DeleteAuthor()
+        private static void DeleteAuthor(IAuthorService service)
         {
             Console.Clear();
             Console.WriteLine("Delete an Author");
             Console.WriteLine("List of Available Authors");
-            ShowAuthors();
+            ShowAuthors(service);
             Console.Write("Select an ID to delete:");
             var authorId = int.Parse(Console.ReadLine()!);
 
-            var authorToDelete = _service.GetById(authorId);
+            var authorToDelete = service.GetById(authorId);
             if (authorToDelete != null)
             {
                 Console.Write($"Are you sure to delete {authorToDelete.FirstName} {authorToDelete.LastName} (y/n)?");
                 var response = Console.ReadLine();
                 if (response!.ToLower() == "y")
                 {
-                    var result = _service.Delete(authorToDelete.AuthorId);
+                    var result = service.Delete(authorToDelete.AuthorId);
                     if (!result.Success)
                     {
                         foreach (var error in result.Errors)
@@ -177,7 +183,7 @@ namespace BooksIo2026.Consola
             Console.ReadLine();
         }
 
-        private static void AddAuthor()
+        private static void AddAuthor(IAuthorService service)
         {
             Console.Clear();
             Console.WriteLine("Add a New Author");
@@ -190,7 +196,7 @@ namespace BooksIo2026.Consola
                 FirstName = firstName!,
                 LastName = lastName!
             };
-            var result = _service.Add(authorDto);
+            var result = service.Add(authorDto);
             if (!result.Success)
             {
                 foreach (var error in result.Errors)
@@ -209,18 +215,18 @@ namespace BooksIo2026.Consola
 
         }
 
-        private static void ListAuthors()
+        private static void ListAuthors(IAuthorService service)
         {
             Console.Clear();
             Console.WriteLine("List of Authors");
-            ShowAuthors();
+            ShowAuthors(service);
             Console.WriteLine("Press any key to continue");
             Console.ReadLine();
         }
 
-        private static void ShowAuthors()
+        private static void ShowAuthors(IAuthorService service)
         {
-            var authors = _service.GetAll();
+            var authors = service.GetAll();
             foreach (var author in authors)
             {
                 Console.WriteLine($"ID:{author.AuthorId,4} Author:{author.FullName,-30}");

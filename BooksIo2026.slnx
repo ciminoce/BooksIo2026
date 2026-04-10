@@ -5,5 +5,6 @@
   <Project Path="BooksIo2026.Consola/BooksIo2026.Consola.csproj" />
   <Project Path="BooksIo2026.Data/BooksIo2026.Data.csproj" />
   <Project Path="BooksIo2026.Entities/BooksIo2026.Entities.csproj" />
+  <Project Path="BooksIo2026.IoC/BooksIo2026.IoC.csproj" Id="e9db9919-3833-478f-bb45-a0a95b649316" />
   <Project Path="BooksIo2026.Service/BooksIo2026.Service.csproj" Id="d68f54ce-fa27-4396-a6ef-782fa5a5f444" />
 </Solution>
