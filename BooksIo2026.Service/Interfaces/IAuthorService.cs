@@ -1,13 +1,16 @@
 ﻿using BooksIo2026.Entities;
+using BooksIo2026.Service.DTOs.Author;
 
 namespace BooksIo2026.Service.Interfaces
 {
     public interface IAuthorService
     {
-        List<Author> GetAll();
-        Author? GetById(int id);
-        (bool Success, List<string> Errors) Add(Author author);
-        (bool Success, List<string> Errors) Update(Author author);
+        List<AuthorListDto> GetAll();
+        AuthorDetailsDto? GetById(int id);
+        AuthorUpdateDto? GetForUpdate(int id);
+        //bool Exist(string FirstName, string LastName);
+        (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto);
+        (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto);
         (bool Success, List<string> Errors) Delete(int id);
     }
 }

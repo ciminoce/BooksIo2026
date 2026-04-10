@@ -1,9 +1,9 @@
 ﻿using BooksIo2026.Data.Interfaces;
 using BooksIo2026.Data.Repositories;
 using BooksIo2026.Entities;
+using BooksIo2026.Service.DTOs.Author;
 using BooksIo2026.Service.Interfaces;
 using BooksIo2026.Service.Validators;
-using System.ComponentModel;
 
 namespace BooksIo2026.Service.Services
 {
@@ -17,9 +17,14 @@ namespace BooksIo2026.Service.Services
             _validator = new AuthorValidator();
         }
 
-        public (bool Success, List<string>Errors) Add(Author author)
+        public (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto)
         {
-            
+            var author = new Author
+            {
+                FirstName = authorDto.FirstName,
+                LastName = authorDto.LastName,
+            };
+
             var result = _validator.Validate(author);
             if (!result.IsValid)
             {
@@ -27,21 +32,30 @@ namespace BooksIo2026.Service.Services
                 var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
                 return (false, errors);
             }
-            try
+            if (!_repository.Exist(author.FirstName, author.LastName))
             {
-                _repository.Add(author);
-                return (true, new List<string>());
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    _repository.Add(author);
+                    return (true, new List<string>());
+                }
+                catch (Exception)
+                {
 
-                return (false, new List<string>() { "Database error" });
+                    return (false, new List<string>() { "Database error" });
+                }
+
+            }
+            else
+            {
+                return (false, new List<string>() { "Author already exist!!!" });
+
             }
         }
 
         public (bool Success, List<string> Errors) Delete(int id)
         {
-            
+
             try
             {
                 _repository.Delete(id);
@@ -50,38 +64,78 @@ namespace BooksIo2026.Service.Services
             catch (Exception)
             {
 
-                return (false,new List<string>() { "Database error" });
+                return (false, new List<string>() { "Database error" });
             }
         }
 
-        public List<Author> GetAll()
+        public List<AuthorListDto> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.GetAll()
+                .Select(a => new AuthorListDto
+                {
+                    AuthorId = a.AuthorId,
+                    FullName = $"{a.FirstName} {a.LastName}"
+                }).ToList();
         }
 
-        public Author? GetById(int id)
+        public AuthorDetailsDto? GetById(int id)
         {
-            return _repository.GetById(id);
+            var author = _repository.GetById(id);
+            if (author == null) return null;
+            return  new AuthorDetailsDto
+            {
+                AuthorId = author.AuthorId,
+                FirstName = author.FirstName,
+                LastName = author.LastName
+            };
         }
 
-        public (bool Success, List<string> Errors) Update(Author author)
+        public AuthorUpdateDto? GetForUpdate(int id)
         {
-            var result=_validator.Validate(author);
+            var author = _repository.GetById(id);
+            if (author == null) return null;
+            return new AuthorUpdateDto
+            {
+                AuthorId = author.AuthorId,
+                FirstName = author.FirstName,
+                LastName = author.LastName,
+            };
+        }
+
+        public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
+        {
+            var author = new Author
+            {
+                AuthorId = authorDto.AuthorId,
+                FirstName = authorDto.FirstName,
+                LastName = authorDto.LastName,
+            };
+
+            var result = _validator.Validate(author);
             if (!result.IsValid)
             {
                 var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
                 return (false, errors);
 
             }
-            try
+            if (!_repository.Exist(author.FirstName, author.LastName, author.AuthorId))
             {
-                _repository.Update(author);
-                return (true,new List<string>());
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    _repository.Update(author);
+                    return (true, new List<string>());
+                }
+                catch (Exception)
+                {
 
-                return (false, new List<string>() { "Database error" });
+                    return (false, new List<string>() { "Database error" });
+                }
+
+            }
+            else
+            {
+                return (false, new List<string>() { "Author already exist!!!" });
+
             }
         }
     }

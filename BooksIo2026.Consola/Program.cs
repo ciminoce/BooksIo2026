@@ -1,4 +1,4 @@
-﻿using BooksIo2026.Entities;
+﻿using BooksIo2026.Service.DTOs.Author;
 using BooksIo2026.Service.Interfaces;
 using BooksIo2026.Service.Services;
 
@@ -82,10 +82,10 @@ namespace BooksIo2026.Consola
 
             var authorId = int.Parse(Console.ReadLine()!);
 
-            var authorToUpdate = _service.GetById(authorId);
+            var authorToUpdate = _service.GetForUpdate(authorId);
             if (authorToUpdate != null)
             {
-                Console.WriteLine($"Author to Update: {authorToUpdate}");
+                Console.WriteLine($"Author to Update: {authorToUpdate.FirstName} {authorToUpdate.LastName}");
 
                 Console.Write("New First Name (ENTER to keep the same):");
                 var inputFirstName = Console.ReadLine();
@@ -185,12 +185,12 @@ namespace BooksIo2026.Consola
             var firstName = Console.ReadLine();
             Console.Write("Last Name:");
             var lastName = Console.ReadLine();
-            var author = new Author
+            var authorDto = new AuthorCreateDto
             {
                 FirstName = firstName!,
                 LastName = lastName!
             };
-            var result = _service.Add(author);
+            var result = _service.Add(authorDto);
             if (!result.Success)
             {
                 foreach (var error in result.Errors)
@@ -204,9 +204,8 @@ namespace BooksIo2026.Consola
 
             }
             Console.WriteLine("Press any key to continue");
-            Console.ReadLine();
+            Console.ReadKey();
 
-            return;
 
         }
 
@@ -224,7 +223,7 @@ namespace BooksIo2026.Consola
             var authors = _service.GetAll();
             foreach (var author in authors)
             {
-                Console.WriteLine($"ID:{author.AuthorId} Author:{author}");
+                Console.WriteLine($"ID:{author.AuthorId,4} Author:{author.FullName,-30}");
             }
 
         }

@@ -1,0 +1,108 @@
+DTOs
+Mapeo
+UnitOfWork - sencillo
+    public interface IUnitOfWork
+    {
+        void Save();
+    }
+
+
+    public class UnitOfWork : IUnitOfWork
+    {
+        private readonly BooksDbContext _context;
+        public UnitOfWork(BooksDbContext context)
+        {
+            _context = context;
+        }
+
+
+        public void Save()
+        {
+            _context.SaveChanges();
+        }
+    }
+
+DI
+    public static class DependencyInjectionContainer
+    {
+        public static IServiceProvider Configure()
+        {
+            var services = new ServiceCollection();
+            services.AddDbContext<BooksDbContext>();
+            services.AddScoped<IValidator<Author>, AuthorValidator>();
+            services.AddScoped<IAuthorRepository, AuthorRepository>();
+            services.AddScoped<IAuthorService, AuthorService>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            return services.BuildServiceProvider();
+        }
+    }
+
+            static IServiceProvider provider = DependencyInjectionContainer.Configure();
+
+                    private static void AuthorsMenu()
+        {
+            using (var scope = provider.CreateScope())
+            {
+                var _service=scope.ServiceProvider.GetRequiredService<IAuthorService>();
+                do
+                {
+                    Console.Clear();
+                    Console.WriteLine("Author's Manager");
+                    Console.WriteLine("1. List of Authors");
+                    Console.WriteLine("2. Add an Author");
+                    Console.WriteLine("3. Delete an Author");
+                    Console.WriteLine("4. Update an Author");
+
+                    Console.WriteLine("0. Back to Main Menu");
+                    Console.Write("Select an option:");
+                    var opcion = Console.ReadLine();
+                    switch (opcion)
+                    {
+                        case "1":
+                            ListAuthors(_service);
+                            break;
+                        case "2":
+                            AddAuthor(_service);
+                            break;
+                        case "3":
+                            DeleteAuthor(_service);
+                            break;
+                        case "4":
+                            UpdateAuthor(_service);
+                            break;
+                        case "0":
+                            Console.WriteLine("Exiting...");
+                            return;
+                        default:
+                            break;
+                    }
+
+
+                } while (true);
+            }
+        }
+UnitOfWork - completo
+    public interface IUnitOfWork
+    {
+        IAuthorRepository Authors { get; }
+        IBookRepository Books { get; }
+        void Save();
+    }
+
+    public class UnitOfWork : IUnitOfWork
+    {
+        private readonly BooksDbContext _context;
+        public IAuthorRepository Authors { get; }
+        public UnitOfWork(BooksDbContext context)
+        {
+            _context = context;
+            Authors = new Repositories.AuthorRepository(_context);
+        }
+
+
+        public void Save()
+        {
+            _context.SaveChanges();
+        }
+    }
