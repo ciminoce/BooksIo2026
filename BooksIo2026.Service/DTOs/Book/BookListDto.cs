@@ -1,0 +1,12 @@
+﻿namespace BooksIo2026.Service.DTOs.Book
+{
+    public class BookListDto
+    {
+        public int BookId { get; set; }
+        public string Title { get; set; } = null!;
+        public string AuthorName { get; set; } = null!;
+        public string PublisherName { get; set; } = null!;
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+    }
+}

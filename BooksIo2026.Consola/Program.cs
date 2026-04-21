@@ -1,6 +1,7 @@
 ﻿using BooksIo2026.Data.Migrations;
 using BooksIo2026.IoC;
 using BooksIo2026.Service.DTOs.Author;
+using BooksIo2026.Service.DTOs.Book;
 using BooksIo2026.Service.DTOs.Publisher;
 using BooksIo2026.Service.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,13 +44,15 @@ namespace BooksIo2026.Consola
 
         private static void BooksMenu()
         {
-            //using (var scoped = provider.CreateScope())
-            //{
-            //    var service = scoped.ServiceProvider.GetRequiredService<IPublisherService>();
+            using (var scoped = provider.CreateScope())
+            {
+                var bookService = scoped.ServiceProvider.GetRequiredService<IBookService>();
+                var authorService = scoped.ServiceProvider.GetRequiredService<IAuthorService>();
+                var publisherService = scoped.ServiceProvider.GetRequiredService<IPublisherService>();
                 do
                 {
                     Console.Clear();
-                    Console.WriteLine("Books's Manager");
+                    Console.WriteLine("Book's Manager");
                     Console.WriteLine("1. List of Books");
                     Console.WriteLine("2. Add a Book");
                     Console.WriteLine("3. Delete a Book");
@@ -59,18 +62,18 @@ namespace BooksIo2026.Consola
                     var opcion = Console.ReadLine();
                     switch (opcion)
                     {
-                        //case "1":
-                        //    ListPublishers(service);
-                        //    break;
-                        //case "2":
-                        //    AddPublisher(service);
-                        //    break;
-                        //case "3":
-                        //    DeletePublisher(service);
-                        //    break;
-                        //case "4":
-                        //    UpdatePublisher(service);
-                        //    break;
+                        case "1":
+                            ListBooks(bookService);
+                            break;
+                        case "2":
+                            AddBook(bookService, publisherService, authorService);
+                            break;
+                        case "3":
+                            DeleteBook(bookService);
+                            break;
+                        case "4":
+                            UpdateBook(bookService, publisherService, authorService);
+                            break;
                         case "0":
                             Console.WriteLine("Exiting...");
                             return;
@@ -81,7 +84,215 @@ namespace BooksIo2026.Consola
 
                 } while (true);
 
-            //}
+            }
+
+        }
+
+        private static void AddBook(IBookService service, IPublisherService publisherService, IAuthorService authorService)
+        {
+            Console.Clear();
+            Console.WriteLine("--- Add New Book ---");
+
+            var dto = new BookCreateDto();
+
+            Console.Write("Title: ");
+            dto.Title = Console.ReadLine() ?? "";
+
+            // 🔥 Mostrar Authors
+            Console.WriteLine("\nAvailable Authors:");
+            ShowAuthors(authorService);
+
+            Console.Write("Select Author ID: ");
+            if (!int.TryParse(Console.ReadLine(), out int authorId))
+            {
+                Console.WriteLine("Invalid Author ID");
+                Console.ReadLine();
+                return;
+            }
+            dto.AuthorId = authorId;
+
+            // 🔥 Mostrar Publishers
+            Console.WriteLine("\nAvailable Publishers:");
+            ShowPublishers(publisherService);
+
+            Console.Write("Select Publisher ID: ");
+            if (!int.TryParse(Console.ReadLine(), out int publisherId))
+            {
+                Console.WriteLine("Invalid Publisher ID");
+                Console.ReadLine();
+                return;
+            }
+            dto.PublisherId = publisherId;
+
+            Console.Write("Published Date (yyyy-mm-dd): ");
+            if (DateTime.TryParse(Console.ReadLine(), out DateTime date))
+            {
+                dto.PublishedDate = date;
+            }
+
+            Console.Write("Price: ");
+            if (decimal.TryParse(Console.ReadLine(), out decimal price))
+            {
+                dto.Price = price;
+            }
+
+            // 🔥 LLAMADA AL SERVICE
+            var result = service.Add(dto);
+
+            if (!result.Success)
+            {
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine(error);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Book added successfully!!!");
+            }
+
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadLine();
+        }
+        private static void ListBooks(IBookService service)
+        {
+            Console.Clear();
+            Console.WriteLine("List of Books");
+            ShowBooks(service);
+            Console.WriteLine("Press any key to continue");
+            Console.ReadLine();
+        }
+
+        private static void ShowBooks(IBookService service)
+        {
+            var books = service.GetAll();
+            foreach (var book in books)
+            {
+                Console.WriteLine($"ID:{book.BookId,4} Title:{book.Title,-40} Author:{book.AuthorName,-30} Publisher:{book.PublisherName,-10}");
+            }
+
+        }
+        private static void UpdateBook(
+            IBookService service, IPublisherService publisherService,
+            IAuthorService authorService)
+        {
+            Console.Clear();
+            Console.WriteLine("Update Book");
+
+            ShowBooks(service);
+
+            Console.Write("Select Book ID: ");
+            if (!int.TryParse(Console.ReadLine(), out int bookId))
+            {
+                Console.WriteLine("Invalid ID");
+                Console.ReadLine();
+                return;
+            }
+
+            var book = service.GetForUpdate(bookId);
+
+            if (book == null)
+            {
+                Console.WriteLine("Book not found");
+                Console.ReadLine();
+                return;
+            }
+
+            // 🔹 Title
+            Console.Write($"Title ({book.Title}): ");
+            var input = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(input))
+                book.Title = input;
+
+            // 🔥 Author
+            Console.WriteLine("\nAuthors:");
+            ShowAuthors(authorService);
+
+            Console.Write($"AuthorId ({book.AuthorId}): ");
+            input = Console.ReadLine();
+            if (int.TryParse(input, out int authorId))
+                book.AuthorId = authorId;
+
+            // 🔥 Publisher
+            Console.WriteLine("\nPublishers:");
+            ShowPublishers(publisherService);
+
+            Console.Write($"PublisherId ({book.PublisherId}): ");
+            input = Console.ReadLine();
+            if (int.TryParse(input, out int publisherId))
+                book.PublisherId = publisherId;
+
+            // 🔹 Fecha
+            Console.Write($"Published Date ({book.PublishedDate:yyyy-MM-dd}): ");
+            input = Console.ReadLine();
+            if (DateTime.TryParse(input, out DateTime date))
+                book.PublishedDate = date;
+
+            // 🔹 Precio
+            Console.Write($"Price ({book.Price}): ");
+            input = Console.ReadLine();
+            if (decimal.TryParse(input, out decimal price))
+                book.Price = price;
+
+            // 🔹 Activo
+            Console.Write($"Is Active ({book.IsActive}): ");
+            input = Console.ReadLine();
+            if (bool.TryParse(input, out bool isActive))
+                book.IsActive = isActive;
+
+            // 🔥 Llamada al service
+            var result = service.Update(book);
+
+            if (!result.Success)
+            {
+                foreach (var error in result.Errors)
+                    Console.WriteLine(error);
+            }
+            else
+            {
+                Console.WriteLine("Book updated successfully!");
+            }
+
+            Console.ReadLine();
+        }
+        private static void DeleteBook(IBookService service)
+        {
+            Console.Clear();
+            Console.WriteLine("Delete Book");
+
+            ShowBooks(service);
+
+            Console.Write("Select Book ID: ");
+            if (!int.TryParse(Console.ReadLine(), out int bookId))
+            {
+                Console.WriteLine("Invalid ID");
+                Console.ReadLine();
+                return;
+            }
+
+            Console.Write("Are you sure? (y/n): ");
+            var confirm = Console.ReadLine();
+
+            if (confirm?.ToLower() != "y")
+            {
+                Console.WriteLine("Cancelled");
+                Console.ReadLine();
+                return;
+            }
+
+            var result = service.Delete(bookId);
+
+            if (!result.Success)
+            {
+                foreach (var error in result.Errors)
+                    Console.WriteLine(error);
+            }
+            else
+            {
+                Console.WriteLine("Book deleted successfully!");
+            }
+
+            Console.ReadLine();
         }
 
         private static void PublishersMenu()
