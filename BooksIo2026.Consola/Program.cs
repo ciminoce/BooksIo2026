@@ -18,6 +18,7 @@ namespace BooksIo2026.Consola
                 Console.WriteLine("Library Manager");
                 Console.WriteLine("1. Authors");
                 Console.WriteLine("2. Publishers");
+                Console.WriteLine("3. Books");
                 Console.WriteLine("0. Exit");
                 Console.Write("Select an option:");
                 var option = Console.ReadLine();
@@ -29,12 +30,58 @@ namespace BooksIo2026.Consola
                     case "2":
                         PublishersMenu();
                         break;
+                    case "3":
+                        BooksMenu();
+                        break;
                     case "0":
                         return;
                     default:
                         break;
                 }
             } while (true);
+        }
+
+        private static void BooksMenu()
+        {
+            //using (var scoped = provider.CreateScope())
+            //{
+            //    var service = scoped.ServiceProvider.GetRequiredService<IPublisherService>();
+                do
+                {
+                    Console.Clear();
+                    Console.WriteLine("Books's Manager");
+                    Console.WriteLine("1. List of Books");
+                    Console.WriteLine("2. Add a Book");
+                    Console.WriteLine("3. Delete a Book");
+                    Console.WriteLine("4. Update a Book");
+                    Console.WriteLine("0. Back to Main Menu");
+                    Console.Write("Select an option:");
+                    var opcion = Console.ReadLine();
+                    switch (opcion)
+                    {
+                        //case "1":
+                        //    ListPublishers(service);
+                        //    break;
+                        //case "2":
+                        //    AddPublisher(service);
+                        //    break;
+                        //case "3":
+                        //    DeletePublisher(service);
+                        //    break;
+                        //case "4":
+                        //    UpdatePublisher(service);
+                        //    break;
+                        case "0":
+                            Console.WriteLine("Exiting...");
+                            return;
+                        default:
+                            break;
+                    }
+
+
+                } while (true);
+
+            //}
         }
 
         private static void PublishersMenu()
