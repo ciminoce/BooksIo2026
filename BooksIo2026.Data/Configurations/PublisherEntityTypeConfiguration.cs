@@ -20,7 +20,7 @@ namespace BooksIo2026.Data.Configurations
 
             builder.Property(p => p.Email)
                    .HasMaxLength(150)
-                   .IsUnicode(false); // Los emails suelen ser caracteres estándar ASCII
+                   .IsUnicode(false); 
 
             builder.Property(p => p.IsActive)
                    .HasDefaultValue(true); // Nuevos registros activos por defecto
