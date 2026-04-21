@@ -31,5 +31,6 @@ namespace BooksIo2026.Entities
         {
             return $"{FirstName} {LastName}";
         }
+        public ICollection<Book>? Books { get; set; }
     }
 }
