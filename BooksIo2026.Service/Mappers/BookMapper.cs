@@ -69,6 +69,7 @@ namespace BooksIo2026.Service.Mappers
         {
             return new BookListDto
             {
+                BookId = b.BookId,
                 Title = b.Title,
                 AuthorName = $"{b.Author.FirstName} {b.Author.LastName}",
                 PublisherName = b.Publisher.Name,
