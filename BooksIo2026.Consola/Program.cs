@@ -1,5 +1,4 @@
-﻿using BooksIo2026.Data.Migrations;
-using BooksIo2026.IoC;
+﻿using BooksIo2026.IoC;
 using BooksIo2026.Service.DTOs.Author;
 using BooksIo2026.Service.DTOs.Book;
 using BooksIo2026.Service.DTOs.Publisher;
@@ -350,7 +349,7 @@ namespace BooksIo2026.Consola
             var publisherToUpdate = service.GetForUpdate(publisherId);
             if (publisherToUpdate != null)
             {
-                
+
 
                 Console.Write("Name (current: {0}): ", publisherToUpdate.Name);
                 var input = Console.ReadLine();
