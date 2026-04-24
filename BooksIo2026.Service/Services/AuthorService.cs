@@ -1,27 +1,22 @@
 ﻿using BooksIo2026.Data;
-using BooksIo2026.Data.Interfaces;
-using BooksIo2026.Data.Repositories;
 using BooksIo2026.Entities;
 using BooksIo2026.Service.DTOs.Author;
 using BooksIo2026.Service.Interfaces;
 using BooksIo2026.Service.Mappers;
-using BooksIo2026.Service.Validators;
 using FluentValidation;
 
 namespace BooksIo2026.Service.Services
 {
     public class AuthorService : IAuthorService
     {
-        private readonly IAuthorRepository _repository;
         private readonly IValidator<Author> _validator;
-        private readonly IUnitOfWork _unitOfWork;
-        public AuthorService(IAuthorRepository repository,
+        private readonly IUnitOfWork _uow;
+        public AuthorService(
             IValidator<Author> validator,
             IUnitOfWork unitOfWork)
         {
-            _repository = repository;
             _validator = validator;
-            _unitOfWork= unitOfWork;
+            _uow = unitOfWork;
         }
 
         public (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto)
@@ -35,12 +30,12 @@ namespace BooksIo2026.Service.Services
                 var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
                 return (false, errors);
             }
-            if (!_repository.Exist(author.FirstName, author.LastName))
+            if (!_uow.Authors.Exist(author.FirstName, author.LastName))
             {
                 try
                 {
-                    _repository.Add(author);
-                    _unitOfWork.Save();
+                    _uow.Authors.Add(author);
+                    _uow.Save();
                     return (true, new List<string>());
                 }
                 catch (Exception)
@@ -62,8 +57,8 @@ namespace BooksIo2026.Service.Services
 
             try
             {
-                _repository.Delete(id);
-                _unitOfWork.Save();
+                _uow.Authors.Delete(id);
+                _uow.Save();
                 return (true, new List<string>());
             }
             catch (Exception)
@@ -75,7 +70,7 @@ namespace BooksIo2026.Service.Services
 
         public List<AuthorListDto> GetAll()
         {
-            return _repository.GetAll()
+            return _uow.Authors.GetAll()
                 .Select(a => AuthorMapper
                 .ToAuthorListDto(a))
                 .ToList();
@@ -83,14 +78,14 @@ namespace BooksIo2026.Service.Services
 
         public AuthorDetailsDto? GetById(int id)
         {
-            var author = _repository.GetById(id);
+            var author = _uow.Authors.GetById(id);
             if (author == null) return null;
-            return  AuthorMapper.toAuthorDetailsDto(author);
+            return AuthorMapper.toAuthorDetailsDto(author);
         }
 
         public AuthorUpdateDto? GetForUpdate(int id)
         {
-            var author = _repository.GetById(id);
+            var author = _uow.Authors.GetById(id);
             if (author == null) return null;
             return AuthorMapper.ToAuthorUpdateDto(author);
         }
@@ -98,13 +93,13 @@ namespace BooksIo2026.Service.Services
         public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
         {
             //var author = AuthorMapper.toEntity(authorDto);
-            Author? author=_repository.GetById(authorDto.AuthorId);
+            Author? author = _uow.Authors.GetById(authorDto.AuthorId);
             if (author == null)
             {
                 return (false, new List<string>() { "Author Not Found!!!" });
 
             }
-           
+
             author.FirstName = authorDto.FirstName;
             author.LastName = authorDto.LastName;
 
@@ -115,13 +110,13 @@ namespace BooksIo2026.Service.Services
                 return (false, errors);
 
             }
-            if (!_repository.Exist(author.FirstName, author.LastName, author.AuthorId))
+            if (!_uow.Authors.Exist(author.FirstName, author.LastName, author.AuthorId))
             {
                 try
                 {
                     //OJO VER OTRA COSA JODER!!!
                     //_repository.Update(author);
-                    _unitOfWork.Save();
+                    _uow.Save();
                     return (true, new List<string>());
                 }
                 catch (Exception)

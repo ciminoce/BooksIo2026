@@ -10,15 +10,13 @@ namespace BooksIo2026.Service.Services
 {
     public class PublisherService : IPublisherService
     {
-        private readonly IPublisherRepository _publisherRepository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _uow;
         private readonly IValidator<Publisher> _validator;
 
-        public PublisherService(IPublisherRepository publisherRepository, IUnitOfWork unitOfWork,
+        public PublisherService(IUnitOfWork unitOfWork,
             IValidator<Publisher> validator)
         {
-            _publisherRepository = publisherRepository;
-            _unitOfWork = unitOfWork;
+            _uow = unitOfWork;
             _validator = validator;
         }
 
@@ -32,12 +30,12 @@ namespace BooksIo2026.Service.Services
                 var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
                 return (false, errors);
             }
-            if (!_publisherRepository.Exist(publisher.Name, publisher.PublisherId))
+            if (!_uow.Publishers.Exist(publisher.Name, publisher.PublisherId))
             {
                 try
                 {
-                    _publisherRepository.Add(publisher);
-                    _unitOfWork.Save();
+                    _uow.Publishers.Add(publisher);
+                    _uow.Save();
                     return (true, new List<string>());
                 }
                 catch (Exception)
@@ -58,8 +56,8 @@ namespace BooksIo2026.Service.Services
         {
             try
             {
-                _publisherRepository.Delete(publisherId);
-                _unitOfWork.Save();
+                _uow.Publishers.Delete(publisherId);
+                _uow.Save();
                 return (true, new List<string>());
             }
             catch (Exception)
@@ -72,14 +70,14 @@ namespace BooksIo2026.Service.Services
 
         public List<PublisherListDto> GetAll()
         {
-            return _publisherRepository.GetAll()
+            return _uow.Publishers.GetAll()
                 .Select(p => PublisherMapper.ToPublisherListDto(p))
                 .ToList();
         }
 
         public PublisherDetailsDto? GetById(int id)
         {
-            var publisher = _publisherRepository.GetById(id);
+            var publisher = _uow.Publishers.GetById(id);
             if (publisher == null)
             {
                 return null;
@@ -89,7 +87,7 @@ namespace BooksIo2026.Service.Services
 
         public PublisherUpdateDto? GetForUpdate(int id)
         {
-            var publisher = _publisherRepository.GetById(id);
+            var publisher = _uow.Publishers.GetById(id);
             if (publisher == null)
             {
                 return null;
@@ -99,7 +97,7 @@ namespace BooksIo2026.Service.Services
 
         public (bool Success, List<string> Errors) Update(PublisherUpdateDto publisherDto)
         {
-            var publisher = _publisherRepository.GetById(publisherDto.PublisherId);
+            var publisher = _uow.Publishers.GetById(publisherDto.PublisherId);
             if (publisher == null)
             {
                 return (false, new List<string>() { "Publisher not found" });
@@ -116,12 +114,12 @@ namespace BooksIo2026.Service.Services
                 var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
                 return (false, errors);
             }
-            if (!_publisherRepository.Exist(publisher.Name, publisher.PublisherId))
+            if (!_uow.Publishers.Exist(publisher.Name, publisher.PublisherId))
             {
                 try
                 {
-                    _publisherRepository.Update(publisher);
-                    _unitOfWork.Save();
+                    _uow.Publishers.Update(publisher);
+                    _uow.Save();
                     return (true, new List<string>());
                 }
                 catch (Exception)

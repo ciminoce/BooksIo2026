@@ -10,16 +10,14 @@ namespace BooksIo2026.Service.Services
 {
     public class BookService : IBookService
     {
-        private readonly IBookRepository _repository;
         private readonly IValidator<Book> _validator;
-        private readonly IUnitOfWork _unitOfWork;
-        public BookService(IBookRepository repository,
+        private readonly IUnitOfWork _uow;
+        public BookService(
             IValidator<Book> validator,
             IUnitOfWork unitOfWork)
         {
-            _repository = repository;
             _validator = validator;
-            _unitOfWork = unitOfWork;
+            _uow = unitOfWork;
         }
 
         public (bool Success, List<string> Errors) Add(BookCreateDto bookDto)
@@ -33,12 +31,12 @@ namespace BooksIo2026.Service.Services
                 var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
                 return (false, errors);
             }
-            if (!_repository.Exist(book.Title, book.BookId))
+            if (!_uow.Books.Exist(book.Title, book.BookId))
             {
                 try
                 {
-                    _repository.Add(book);
-                    _unitOfWork.Save();
+                    _uow.Books.Add(book);
+                    _uow.Save();
                     return (true, new List<string>());
                 }
                 catch (Exception)
@@ -60,8 +58,8 @@ namespace BooksIo2026.Service.Services
 
             try
             {
-                _repository.Delete(id);
-                _unitOfWork.Save();
+                _uow.Books.Delete(id);
+                _uow.Save();
                 return (true, new List<string>());
             }
             catch (Exception)
@@ -73,21 +71,21 @@ namespace BooksIo2026.Service.Services
 
         public List<BookListDto> GetAll()
         {
-            return _repository.GetAll()
+            return _uow.Books.GetAll()
                 .Select(b => BookMapper.ToBookListDto(b))
                 .ToList();
         }
 
         public BookDetailDto? GetById(int id)
         {
-            var book = _repository.GetById(id);
+            var book = _uow.Books.GetById(id);
             if (book == null) return null;
             return BookMapper.ToBookDetailDto(book);
         }
 
         public BookUpdateDto? GetForUpdate(int id)
         {
-            var book = _repository.GetById(id);
+            var book = _uow.Books.GetById(id);
             if (book == null) return null;
             return BookMapper.ToBookUpdateDto(book);
         }
@@ -95,7 +93,7 @@ namespace BooksIo2026.Service.Services
         public (bool Success, List<string> Errors) Update(BookUpdateDto bookDto)
         {
             //var book = BookMapper.toEntity(bookDto);
-            Book? book = _repository.GetById(bookDto.BookId);
+            Book? book = _uow.Books.GetById(bookDto.BookId);
             if (book == null)
             {
                 return (false, new List<string>() { "Book Not Found!!!" });
@@ -117,13 +115,13 @@ namespace BooksIo2026.Service.Services
                 return (false, errors);
 
             }
-            if (!_repository.Exist(book.Title, book.BookId))
+            if (!_uow.Books.Exist(book.Title, book.BookId))
             {
                 try
                 {
                     //OJO VER OTRA COSA JODER!!!
                     //_repository.Update(book);
-                    _unitOfWork.Save();
+                    _uow.Save();
                     return (true, new List<string>());
                 }
                 catch (Exception)
