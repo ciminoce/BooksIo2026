@@ -19,6 +19,7 @@ namespace BooksIo2026.Consola
                 Console.WriteLine("1. Authors");
                 Console.WriteLine("2. Publishers");
                 Console.WriteLine("3. Books");
+                Console.WriteLine("4. Sales");
                 Console.WriteLine("0. Exit");
                 Console.Write("Select an option:");
                 var option = Console.ReadLine();
