@@ -22,6 +22,13 @@ namespace BooksIo2026.Data
             //modelBuilder.ApplyConfiguration(new AuthorEntityTypeConfiguration());
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(BooksDbContext).Assembly);
+            // 👇 Desactivar cascade delete globalmente
+            foreach (var fk in modelBuilder.Model
+                     .GetEntityTypes()
+                     .SelectMany(e => e.GetForeignKeys()))
+            {
+                fk.DeleteBehavior = DeleteBehavior.Restrict;
+            }
         }
     }
 }
