@@ -1,6 +1,6 @@
 ﻿using BooksIo2026.Data;
-using BooksIo2026.Data.Interfaces;
 using BooksIo2026.Entities;
+using BooksIo2026.Service.Common;
 using BooksIo2026.Service.DTOs.Book;
 using BooksIo2026.Service.Interfaces;
 using BooksIo2026.Service.Mappers;
@@ -20,7 +20,7 @@ namespace BooksIo2026.Service.Services
             _uow = unitOfWork;
         }
 
-        public (bool Success, List<string> Errors) Add(BookCreateDto bookDto)
+        public Result Add(BookCreateDto bookDto)
         {
             var book = BookMapper.toEntity(bookDto);
 
@@ -28,8 +28,7 @@ namespace BooksIo2026.Service.Services
             if (!result.IsValid)
             {
 
-                var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-                return (false, errors);
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
             }
             if (!_uow.Books.Exist(book.Title, book.BookId))
             {
@@ -37,35 +36,35 @@ namespace BooksIo2026.Service.Services
                 {
                     _uow.Books.Add(book);
                     _uow.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
 
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
                 }
 
             }
             else
             {
-                return (false, new List<string>() { "Book already exist!!!" });
+                return Result.Failure( "Book already exist!!!" );
 
             }
         }
 
-        public (bool Success, List<string> Errors) Delete(int id)
+        public Result Delete(int id)
         {
 
             try
             {
                 _uow.Books.Delete(id);
                 _uow.Save();
-                return (true, new List<string>());
+                return Result.Success();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                return (false, new List<string>() { "Database error" });
+                return Result.Failure(ex.Message);
             }
         }
 
@@ -90,13 +89,13 @@ namespace BooksIo2026.Service.Services
             return BookMapper.ToBookUpdateDto(book);
         }
 
-        public (bool Success, List<string> Errors) Update(BookUpdateDto bookDto)
+        public Result Update(BookUpdateDto bookDto)
         {
             //var book = BookMapper.toEntity(bookDto);
             Book? book = _uow.Books.GetById(bookDto.BookId);
             if (book == null)
             {
-                return (false, new List<string>() { "Book Not Found!!!" });
+                return Result.Failure("Book Not Found");
 
             }
 
@@ -111,8 +110,8 @@ namespace BooksIo2026.Service.Services
             var result = _validator.Validate(book);
             if (!result.IsValid)
             {
-                var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-                return (false, errors);
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
+                
 
             }
             if (!_uow.Books.Exist(book.Title, book.BookId))
@@ -122,18 +121,18 @@ namespace BooksIo2026.Service.Services
                     //OJO VER OTRA COSA JODER!!!
                     //_repository.Update(book);
                     _uow.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
 
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
                 }
 
             }
             else
             {
-                return (false, new List<string>() { "Author already exist!!!" });
+                return Result.Failure("Author already exist!!!" );
 
             }
         }

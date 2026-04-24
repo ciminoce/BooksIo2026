@@ -1,4 +1,5 @@
 ﻿using BooksIo2026.Entities;
+using BooksIo2026.Service.Common;
 using BooksIo2026.Service.DTOs.Author;
 
 namespace BooksIo2026.Service.Interfaces
@@ -9,8 +10,8 @@ namespace BooksIo2026.Service.Interfaces
         AuthorDetailsDto? GetById(int id);
         AuthorUpdateDto? GetForUpdate(int id);
         //bool Exist(string FirstName, string LastName);
-        (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto);
-        (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto);
-        (bool Success, List<string> Errors) Delete(int id);
+        Result Add(AuthorCreateDto authorDto);
+        Result Update(AuthorUpdateDto authorDto);
+        Result Delete(int id);
     }
 }

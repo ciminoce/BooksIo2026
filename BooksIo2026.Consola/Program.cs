@@ -138,7 +138,7 @@ namespace BooksIo2026.Consola
             // 🔥 LLAMADA AL SERVICE
             var result = service.Add(dto);
 
-            if (!result.Success)
+            if (result.IsFailure)
             {
                 foreach (var error in result.Errors)
                 {
@@ -242,7 +242,7 @@ namespace BooksIo2026.Consola
             // 🔥 Llamada al service
             var result = service.Update(book);
 
-            if (!result.Success)
+            if (result.IsFailure)
             {
                 foreach (var error in result.Errors)
                     Console.WriteLine(error);
@@ -281,7 +281,7 @@ namespace BooksIo2026.Consola
 
             var result = service.Delete(bookId);
 
-            if (!result.Success)
+            if (result.IsFailure)
             {
                 foreach (var error in result.Errors)
                     Console.WriteLine(error);
@@ -387,7 +387,7 @@ namespace BooksIo2026.Consola
                 }
 
                 var result = service.Update(publisherToUpdate);
-                if (!result.Success)
+                if (result.IsFailure)
                 {
                     foreach (var error in result.Errors)
                     {
@@ -424,7 +424,7 @@ namespace BooksIo2026.Consola
                 if (response!.ToLower() == "y")
                 {
                     var result = service.Delete(publisherToDelete.PublisherId);
-                    if (!result.Success)
+                    if (result.IsFailure)
                     {
                         foreach (var error in result.Errors)
                         {
@@ -473,7 +473,7 @@ namespace BooksIo2026.Consola
             Console.Write("Email (optional): ");
             dto.Email = Console.ReadLine();
             var result = service.Add(dto);
-            if (!result.Success)
+            if (result.IsFailure)
             {
                 foreach (var error in result.Errors)
                 {
@@ -587,7 +587,7 @@ namespace BooksIo2026.Consola
                     authorToUpdate.LastName = newLastName;
 
                     var result = service.Update(authorToUpdate);
-                    if (!result.Success)
+                    if (result.IsFailure)
                     {
                         foreach (var error in result.Errors)
                         {
@@ -630,7 +630,7 @@ namespace BooksIo2026.Consola
                 if (response!.ToLower() == "y")
                 {
                     var result = service.Delete(authorToDelete.AuthorId);
-                    if (!result.Success)
+                    if (result.IsFailure)
                     {
                         foreach (var error in result.Errors)
                         {
@@ -671,7 +671,7 @@ namespace BooksIo2026.Consola
                 LastName = lastName!
             };
             var result = service.Add(authorDto);
-            if (!result.Success)
+            if (result.IsFailure)
             {
                 foreach (var error in result.Errors)
                 {

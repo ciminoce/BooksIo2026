@@ -1,6 +1,7 @@
 ﻿using BooksIo2026.Data;
 using BooksIo2026.Data.Interfaces;
 using BooksIo2026.Entities;
+using BooksIo2026.Service.Common;
 using BooksIo2026.Service.DTOs.Publisher;
 using BooksIo2026.Service.Interfaces;
 using BooksIo2026.Service.Mappers;
@@ -20,15 +21,14 @@ namespace BooksIo2026.Service.Services
             _validator = validator;
         }
 
-        public (bool Success, List<string> Errors) Add(PublisherCreateDto publisherDto)
+        public Result Add(PublisherCreateDto publisherDto)
         {
             var publisher = PublisherMapper.ToEntity(publisherDto);
             var result = _validator.Validate(publisher);
             if (!result.IsValid)
             {
 
-                var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-                return (false, errors);
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
             }
             if (!_uow.Publishers.Exist(publisher.Name, publisher.PublisherId))
             {
@@ -36,34 +36,34 @@ namespace BooksIo2026.Service.Services
                 {
                     _uow.Publishers.Add(publisher);
                     _uow.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
 
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
                 }
 
             }
             else
-            {
-                return (false, new List<string>() { "Publisher already exist!!!" });
+            { 
+                return Result.Failure("Publisher already exist!!!");
 
             }
         }
 
-        public (bool Success, List<string> Errors) Delete(int publisherId)
+        public Result Delete(int publisherId)
         {
             try
             {
                 _uow.Publishers.Delete(publisherId);
                 _uow.Save();
-                return (true, new List<string>());
+                return Result.Success();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                return (false, new List<string>() { "Database error" });
+                return Result.Failure(ex.Message);
             }
 
         }
@@ -95,12 +95,12 @@ namespace BooksIo2026.Service.Services
             return PublisherMapper.ToPublisherUpdateDto(publisher);
         }
 
-        public (bool Success, List<string> Errors) Update(PublisherUpdateDto publisherDto)
+        public Result Update(PublisherUpdateDto publisherDto)
         {
             var publisher = _uow.Publishers.GetById(publisherDto.PublisherId);
             if (publisher == null)
             {
-                return (false, new List<string>() { "Publisher not found" });
+                return Result.Failure("Publisher not found");
 
             }
             publisher.Name = publisherDto.Name;
@@ -111,8 +111,8 @@ namespace BooksIo2026.Service.Services
             var result = _validator.Validate(publisher);
             if (!result.IsValid)
             {
-                var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-                return (false, errors);
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
+                
             }
             if (!_uow.Publishers.Exist(publisher.Name, publisher.PublisherId))
             {
@@ -120,16 +120,16 @@ namespace BooksIo2026.Service.Services
                 {
                     _uow.Publishers.Update(publisher);
                     _uow.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
                 }
             }
             else
             {
-                return (false, new List<string>() { "Publisher already exist!!!" });
+                return Result.Failure("Publisher already exist!!!");
             }
         }
     }

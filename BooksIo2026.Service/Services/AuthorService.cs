@@ -1,5 +1,6 @@
 ﻿using BooksIo2026.Data;
 using BooksIo2026.Entities;
+using BooksIo2026.Service.Common;
 using BooksIo2026.Service.DTOs.Author;
 using BooksIo2026.Service.Interfaces;
 using BooksIo2026.Service.Mappers;
@@ -19,7 +20,7 @@ namespace BooksIo2026.Service.Services
             _uow = unitOfWork;
         }
 
-        public (bool Success, List<string> Errors) Add(AuthorCreateDto authorDto)
+        public Result Add(AuthorCreateDto authorDto)
         {
             var author = AuthorMapper.toEntity(authorDto);
 
@@ -27,8 +28,8 @@ namespace BooksIo2026.Service.Services
             if (!result.IsValid)
             {
 
-                var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-                return (false, errors);
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
+                
             }
             if (!_uow.Authors.Exist(author.FirstName, author.LastName))
             {
@@ -36,35 +37,35 @@ namespace BooksIo2026.Service.Services
                 {
                     _uow.Authors.Add(author);
                     _uow.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
 
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
                 }
 
             }
             else
             {
-                return (false, new List<string>() { "Author already exist!!!" });
+                return Result.Failure( "Author already exist!!!");
 
             }
         }
 
-        public (bool Success, List<string> Errors) Delete(int id)
+        public Result Delete(int id)
         {
 
             try
             {
                 _uow.Authors.Delete(id);
                 _uow.Save();
-                return (true, new List<string>());
+                return Result.Success();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                return (false, new List<string>() { "Database error" });
+                return Result.Failure(ex.Message);
             }
         }
 
@@ -90,13 +91,13 @@ namespace BooksIo2026.Service.Services
             return AuthorMapper.ToAuthorUpdateDto(author);
         }
 
-        public (bool Success, List<string> Errors) Update(AuthorUpdateDto authorDto)
+        public Result Update(AuthorUpdateDto authorDto)
         {
             //var author = AuthorMapper.toEntity(authorDto);
             Author? author = _uow.Authors.GetById(authorDto.AuthorId);
             if (author == null)
             {
-                return (false, new List<string>() { "Author Not Found!!!" });
+                return Result.Failure("Author Not Found");
 
             }
 
@@ -106,9 +107,7 @@ namespace BooksIo2026.Service.Services
             var result = _validator.Validate(author);
             if (!result.IsValid)
             {
-                var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-                return (false, errors);
-
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
             }
             if (!_uow.Authors.Exist(author.FirstName, author.LastName, author.AuthorId))
             {
@@ -117,18 +116,18 @@ namespace BooksIo2026.Service.Services
                     //OJO VER OTRA COSA JODER!!!
                     //_repository.Update(author);
                     _uow.Save();
-                    return (true, new List<string>());
+                    return Result.Success();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
 
-                    return (false, new List<string>() { "Database error" });
+                    return Result.Failure(ex.Message);
                 }
 
             }
             else
             {
-                return (false, new List<string>() { "Author already exist!!!" });
+                return Result.Failure("Author already exist!!!");
 
             }
         }
