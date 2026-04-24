@@ -25,18 +25,9 @@ namespace BooksIo2026.Data.Repositories
             _context.Books.Remove(book);
         }
 
-        public bool Exist(string title, int? bookId = null)
+        public bool ExistSameName(string title, int? bookId = null)
         {
-            Book? book;
-            if (bookId == null)
-            {
-                book = _context.Books.FirstOrDefault(b => b.Title == title);
-            }
-            else
-            {
-                book = _context.Books.FirstOrDefault(b => b.Title == title && b.BookId != bookId);
-            }
-            return book != null;
+            return _context.Books.Any(b=>b.Title==title && b.BookId!=bookId);
         }
 
         public List<Book> GetAll()

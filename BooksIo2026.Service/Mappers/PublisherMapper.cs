@@ -48,5 +48,17 @@ namespace BooksIo2026.Service.Mappers
                 IsActive = publisher.IsActive
             };
         }
+
+        public static Publisher ToEntity(PublisherUpdateDto dto)
+        {
+            return new Publisher
+            {
+                PublisherId = dto.PublisherId,
+                Name = dto.Name,
+                Email = dto.Email,
+                FoundedDate = dto.FoundedDate,
+                IsActive = dto.IsActive
+            };
+        }
     }
 }

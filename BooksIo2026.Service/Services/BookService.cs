@@ -30,27 +30,25 @@ namespace BooksIo2026.Service.Services
 
                 return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
             }
-            if (!_uow.Books.Exist(book.Title, book.BookId))
+            if (_uow.Books.ExistSameName(book.Title, book.BookId))
             {
-                try
-                {
-                    _uow.Books.Add(book);
-                    _uow.Save();
-                    return Result.Success();
-                }
-                catch (Exception ex)
-                {
-
-                    return Result.Failure(ex.Message);
-                }
+                return Result.Failure("Book already exist!!!");
 
             }
-            else
+            try
             {
-                return Result.Failure( "Book already exist!!!" );
-
+                _uow.Books.Add(book);
+                _uow.Save();
+                return Result.Success();
             }
+            catch (Exception ex)
+            {
+
+                return Result.Failure(ex.Message);
+            }
+
         }
+        
 
         public Result Delete(int id)
         {
@@ -91,7 +89,13 @@ namespace BooksIo2026.Service.Services
 
         public Result Update(BookUpdateDto bookDto)
         {
-            //var book = BookMapper.toEntity(bookDto);
+            var bookToValidate = BookMapper.toEntity(bookDto);
+            var result = _validator.Validate(bookToValidate);
+            if (!result.IsValid)
+            {
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
+            }
+
             Book? book = _uow.Books.GetById(bookDto.BookId);
             if (book == null)
             {
@@ -107,35 +111,25 @@ namespace BooksIo2026.Service.Services
             book.Stock = bookDto.Stock;
             book.IsActive = bookDto.IsActive;
 
-            var result = _validator.Validate(book);
-            if (!result.IsValid)
+            if (_uow.Books.ExistSameName(book.Title, book.BookId))
             {
-                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
-                
+                return Result.Failure("Book already exist!!!");
 
             }
-            if (!_uow.Books.Exist(book.Title, book.BookId))
+            try
             {
-                try
-                {
-                    //OJO VER OTRA COSA JODER!!!
-                    //_repository.Update(book);
-                    _uow.Save();
-                    return Result.Success();
-                }
-                catch (Exception ex)
-                {
-
-                    return Result.Failure(ex.Message);
-                }
-
+                //OJO VER OTRA COSA JODER!!!
+                //_repository.Update(book);
+                _uow.Save();
+                return Result.Success();
             }
-            else
+            catch (Exception ex)
             {
-                return Result.Failure("Author already exist!!!" );
 
+                return Result.Failure(ex.Message);
             }
+
         }
-
     }
+
 }

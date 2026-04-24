@@ -9,6 +9,7 @@ namespace BooksIo2026.Data.Interfaces
         void Delete(int id);
         void Update(Publisher publisher);
         void Add(Publisher publisher);
-        bool Exist(string name, int? publisherId = null);
+        bool ExistSameName(string name, int? publisherId = null);
+        bool HasBooks(int id);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using BooksIo2026.Data;
-using BooksIo2026.Data.Interfaces;
 using BooksIo2026.Entities;
 using BooksIo2026.Service.Common;
 using BooksIo2026.Service.DTOs.Publisher;
@@ -27,33 +26,37 @@ namespace BooksIo2026.Service.Services
             var result = _validator.Validate(publisher);
             if (!result.IsValid)
             {
-
                 return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
             }
-            if (!_uow.Publishers.Exist(publisher.Name, publisher.PublisherId))
+            if (!_uow.Publishers.ExistSameName(publisher.Name, publisher.PublisherId))
             {
-                try
-                {
-                    _uow.Publishers.Add(publisher);
-                    _uow.Save();
-                    return Result.Success();
-                }
-                catch (Exception ex)
-                {
-
-                    return Result.Failure(ex.Message);
-                }
-
-            }
-            else
-            { 
                 return Result.Failure("Publisher already exist!!!");
-
             }
+            try
+            {
+                _uow.Publishers.Add(publisher);
+                _uow.Save();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+
+                return Result.Failure(ex.Message);
+            }
+
         }
 
         public Result Delete(int publisherId)
         {
+            var publisher = _uow.Publishers.GetById(publisherId);
+            if (publisher==null)
+            {
+                return Result.Failure("Publisher Not Found");
+            }
+            if (_uow.Publishers.HasBooks(publisherId))
+            {
+                return Result.Failure("Publisher with associated books");
+            }
             try
             {
                 _uow.Publishers.Delete(publisherId);
@@ -97,6 +100,14 @@ namespace BooksIo2026.Service.Services
 
         public Result Update(PublisherUpdateDto publisherDto)
         {
+            var publisherToValidate = PublisherMapper.ToEntity(publisherDto);
+            var result = _validator.Validate(publisherToValidate);
+            if (!result.IsValid)
+            {
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
+
+            }
+
             var publisher = _uow.Publishers.GetById(publisherDto.PublisherId);
             if (publisher == null)
             {
@@ -108,28 +119,19 @@ namespace BooksIo2026.Service.Services
             publisher.FoundedDate = publisherDto.FoundedDate;
             publisher.Email = publisherDto.Email;
             publisher.IsActive = publisherDto.IsActive;
-            var result = _validator.Validate(publisher);
-            if (!result.IsValid)
-            {
-                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
-                
-            }
-            if (!_uow.Publishers.Exist(publisher.Name, publisher.PublisherId))
-            {
-                try
-                {
-                    _uow.Publishers.Update(publisher);
-                    _uow.Save();
-                    return Result.Success();
-                }
-                catch (Exception ex)
-                {
-                    return Result.Failure(ex.Message);
-                }
-            }
-            else
+            if (!_uow.Publishers.ExistSameName(publisher.Name, publisher.PublisherId))
             {
                 return Result.Failure("Publisher already exist!!!");
+            }
+            try
+            {
+                _uow.Publishers.Update(publisher);
+                _uow.Save();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.Message);
             }
         }
     }

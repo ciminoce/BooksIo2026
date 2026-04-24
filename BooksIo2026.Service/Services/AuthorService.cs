@@ -27,35 +27,38 @@ namespace BooksIo2026.Service.Services
             var result = _validator.Validate(author);
             if (!result.IsValid)
             {
-
                 return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
-                
             }
-            if (!_uow.Authors.Exist(author.FirstName, author.LastName))
+            if (_uow.Authors.ExistSameName(author.FirstName, author.LastName))
             {
-                try
-                {
-                    _uow.Authors.Add(author);
-                    _uow.Save();
-                    return Result.Success();
-                }
-                catch (Exception ex)
-                {
-
-                    return Result.Failure(ex.Message);
-                }
+                return Result.Failure("Author already exist!!!");
 
             }
-            else
+            try
             {
-                return Result.Failure( "Author already exist!!!");
-
+                _uow.Authors.Add(author);
+                _uow.Save();
+                return Result.Success();
             }
+            catch (Exception ex)
+            {
+
+                return Result.Failure(ex.Message);
+            }
+
         }
 
         public Result Delete(int id)
         {
-
+            var author = _uow.Authors.GetById(id);
+            if (author == null)
+            {
+                return Result.Failure("Author Not Found");
+            }
+            if (_uow.Authors.HasBooks(id))
+            {
+                return Result.Failure("Author with asociated books");
+            }
             try
             {
                 _uow.Authors.Delete(id);
@@ -93,7 +96,13 @@ namespace BooksIo2026.Service.Services
 
         public Result Update(AuthorUpdateDto authorDto)
         {
-            //var author = AuthorMapper.toEntity(authorDto);
+            var authorToValidate = AuthorMapper.toEntity(authorDto);
+            var result = _validator.Validate(authorToValidate);
+            if (!result.IsValid)
+            {
+                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
+            }
+
             Author? author = _uow.Authors.GetById(authorDto.AuthorId);
             if (author == null)
             {
@@ -104,32 +113,25 @@ namespace BooksIo2026.Service.Services
             author.FirstName = authorDto.FirstName;
             author.LastName = authorDto.LastName;
 
-            var result = _validator.Validate(author);
-            if (!result.IsValid)
-            {
-                return Result.Failure(result.Errors.Select(e => e.ErrorMessage).ToList());
-            }
-            if (!_uow.Authors.Exist(author.FirstName, author.LastName, author.AuthorId))
-            {
-                try
-                {
-                    //OJO VER OTRA COSA JODER!!!
-                    //_repository.Update(author);
-                    _uow.Save();
-                    return Result.Success();
-                }
-                catch (Exception ex)
-                {
-
-                    return Result.Failure(ex.Message);
-                }
-
-            }
-            else
+            if (_uow.Authors.ExistSameName(author.FirstName, author.LastName, author.AuthorId))
             {
                 return Result.Failure("Author already exist!!!");
 
             }
+            try
+            {
+                //OJO VER OTRA COSA JODER!!!
+                //_repository.Update(author);
+                _uow.Save();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+
+                return Result.Failure(ex.Message);
+            }
+
         }
     }
 }
+

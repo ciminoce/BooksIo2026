@@ -24,7 +24,7 @@ namespace BooksIo2026.Data.Repositories
 
         }
 
-        public bool Exist(string name, int? publisherId = null)
+        public bool ExistSameName(string name, int? publisherId = null)
         {
             return _context.Publishers.Any(p =>
                 p.Name == name &&
@@ -39,6 +39,11 @@ namespace BooksIo2026.Data.Repositories
         public Publisher? GetById(int id)
         {
             return _context.Publishers.Find(id);
+        }
+
+        public bool HasBooks(int id)
+        {
+            return _context.Books.Any(b=>b.PublisherId== id);
         }
 
         public void Update(Publisher publisher)
