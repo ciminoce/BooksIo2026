@@ -8,9 +8,9 @@ namespace BooksIo2026.Service.Interfaces
 {
     public interface IBookService
     {
-        List<BookListDto> GetAll();
-        BookUpdateDto? GetForUpdate(int id);
-        BookDetailDto? GetById(int id);
+        Result<List<BookListDto>> GetAll();
+        Result<BookUpdateDto> GetForUpdate(int id);
+        Result<BookListDto> GetById(int id);
         Result Add(BookCreateDto bookDto);
         Result Update(BookUpdateDto bookDto);
         Result Delete(int id);

@@ -7,14 +7,11 @@ namespace BooksIo2026.Service.Interfaces
     public interface IPublisherService
     {
         
-        List<PublisherListDto> GetAll();
-        PublisherDetailsDto? GetById(int id);
-        PublisherUpdateDto? GetForUpdate(int id);
+        Result<List<PublisherListDto>> GetAll();
+        Result<PublisherListDto> GetById(int id);
+        Result<PublisherUpdateDto> GetForUpdate(int id);
         Result Add(PublisherCreateDto publisher);
         Result Update(PublisherUpdateDto publisherDto);
         Result Delete(int publisherId);
-        //void Delete(int id);
-        //void Update(PublisherUpdateDto publisher);
-        //void Add(PublisherAddDto publisher);
     }
 }
