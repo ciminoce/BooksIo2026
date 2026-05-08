@@ -58,6 +58,8 @@ namespace BooksIo2026.Consola
                     Console.WriteLine("3. Delete a Book");
                     Console.WriteLine("4. Update a Book");
                     Console.WriteLine("5. View Book Details");
+                    Console.WriteLine("6. View Books Grouped By Publisher");
+                    Console.WriteLine("7. Show 10 More Expensive Books");
                     Console.WriteLine("0. Back to Main Menu");
                     Console.Write("Select an option:");
                     var opcion = Console.ReadLine();
@@ -78,6 +80,12 @@ namespace BooksIo2026.Consola
                         case "5":
                             ShowBookDetails(bookService);
                             break;
+                        case "6":
+                            ShowBooksGroupedByPublisher(bookService);
+                            break;
+                        case "7":
+                            ShowTop10MostExpensiveBooks(bookService);
+                            break;
                         case "0":
                             Console.WriteLine("Exiting...");
                             return;
@@ -90,6 +98,136 @@ namespace BooksIo2026.Consola
 
             }
 
+        }
+
+        private static void ShowTop10MostExpensiveBooks(IBookService service)
+        {
+            //Console.Clear();
+            //Console.WriteLine("=== TOP 10 Books More Expensive ===\n");
+
+            //var resultT = service.Get10BooksMoreExpensive();
+
+            //if (resultT.IsFailure)
+            //{
+            //    ShowErrors(resultT.Errors);
+            //}
+            //var books = resultT.Value;
+            //Console.WriteLine(
+            //    $"{"ID",-5} {"TITLE",-30} {"AUTHOR",-25} {"PUBLISHER",-20} {"PRICE",10}");
+
+            //Console.WriteLine(new string('-', 95));
+
+            //foreach (var book in books!)
+            //{
+            //    Console.WriteLine(
+            //        $"{book.BookId,-5} " +
+            //        $"{book.Title,-30} " +
+            //        $"{book.AuthorName,-25} " +
+            //        $"{book.PublisherName,-20} " +
+            //        $"{book.Price,10}"
+            //    );
+            //}
+
+            //Console.WriteLine("Press key to continue...");
+            //Console.ReadKey();
+        }
+
+        private static void ShowBooksGroupedByPublisher(IBookService service)
+        {
+            //Console.Clear();
+            //Console.WriteLine("BOOKS GROUPED BY PUBLISHER");
+            //Console.WriteLine(new string('-', 90));
+
+            //var resultT = service.GetBooksGroupByPublisher();
+
+            //if (!resultT.IsSuccess || resultT.Value == null || !resultT.Value.Any())
+            //{
+            //    Console.WriteLine("No records found.");
+            //    Console.ReadKey();
+            //    return;
+            //}
+
+            //var groupedBooks = resultT.Value.ToList();
+
+            //Console.WriteLine(
+            //    $"{"#",-5}" +
+            //    $"{"Publisher",-25}" +
+            //    $"{"Books",10}" +
+            //    $"{"Stock",10}");
+
+            //Console.WriteLine(new string('-', 90));
+
+            //for (int i = 0; i < groupedBooks.Count; i++)
+            //{
+            //    var item = groupedBooks[i];
+
+            //    Console.WriteLine(
+            //        $"{i + 1,-5}" +
+            //        $"{item.PublisherName,-25}" +
+            //        $"{item.TotalBooks,10}" +
+            //        $"{item.TotalStock,10}");
+            //}
+
+            //Console.WriteLine(new string('-', 90));
+            //Console.WriteLine();
+            //Console.Write("Would you like to view details for a publisher? (Y/N): ");
+
+            //var answer = Console.ReadLine()?.Trim().ToUpper();
+
+            //if (answer != "Y")
+            //    return;
+
+            //Console.Write("Enter publisher number: ");
+
+            //if (!int.TryParse(Console.ReadLine(), out int option) ||
+            //    option < 1 || option > groupedBooks.Count)
+            //{
+            //    Console.WriteLine("Invalid option.");
+            //    Console.ReadKey();
+            //    return;
+            //}
+
+            //var selectedPublisherId = groupedBooks[option - 1].PublisherId;
+            //var selectedPublisherName = groupedBooks[option - 1].PublisherName;
+
+            //ShowPublisherBooksDetail(service, selectedPublisherId, selectedPublisherName);
+        }
+        private static void ShowPublisherBooksDetail(IBookService service, int publisherId, string publisherName)
+        {
+            //Console.Clear();
+            //Console.WriteLine($"BOOK DETAILS - {publisherName.ToUpper()}");
+            //Console.WriteLine(new string('-', 100));
+
+            //var resultT = service.GetBooksByPublisher(publisherId);
+
+            //if (!resultT.IsSuccess || resultT.Value == null || !resultT.Value.Any())
+            //{
+            //    Console.WriteLine("No books found for this publisher.");
+            //    Console.ReadKey();
+            //    return;
+            //}
+
+            //var books = resultT.Value;
+
+            //Console.WriteLine(
+            //    $"{"Title",-40}" +
+            //    $"{"Author",-25}" +
+            //    $"{"Price",15}" +
+            //    $"{"Stock",10}");
+
+            //Console.WriteLine(new string('-', 100));
+
+            //foreach (var book in books)
+            //{
+            //    Console.WriteLine(
+            //        $"{book.Title,-40}" +
+            //        $"{book.AuthorName,-25}" +
+            //        $"{book.Price,15}" +
+            //        $"{book.Stock,10}");
+            //}
+
+            //Console.WriteLine(new string('-', 100));
+            //Console.ReadKey();
         }
 
         private static void ShowBookDetails(IBookService bookService)
@@ -640,6 +778,7 @@ namespace BooksIo2026.Consola
                     Console.WriteLine("3. Delete an Author");
                     Console.WriteLine("4. Update an Author");
                     Console.WriteLine("5. View Author Details");
+                    Console.WriteLine("6. Show Author Ranking");
                     Console.WriteLine("0. Back to Main Menu");
                     Console.Write("Select an option:");
                     var opcion = Console.ReadLine();
@@ -660,6 +799,9 @@ namespace BooksIo2026.Consola
                         case "5":
                             ShowAuthorDetails(service);
                             break;
+                        case "6":
+                            ShowAuthorsRanking(service);
+                            break;
                         case "0":
                             Console.WriteLine("Exiting...");
                             return;
@@ -671,6 +813,47 @@ namespace BooksIo2026.Consola
                 } while (true);
 
             }
+        }
+
+        private static void ShowAuthorsRanking(IAuthorService service)
+        {
+            //    Console.Clear();
+            //    Console.WriteLine("=== Authors Ranking ===\n");
+
+            //    var result = service.GetAuthorsRanking();
+
+            //    if (result.IsFailure)
+            //    {
+            //        ShowErrors(result.Errors);
+            //        return;
+            //    }
+            //    else
+            //    {
+            //        var ranking = result.Value!;
+
+            //        Console.WriteLine(
+            //            $"{"POS",-5} {"ID",-5} {"AUTHOR",-35} {"BOOKS",10}");
+
+            //        Console.WriteLine(new string('-', 60));
+
+            //        int position = 1;
+
+            //        foreach (var author in ranking)
+            //        {
+            //            var fullName = $"{author.FirstName} {author.LastName}";
+
+            //            Console.WriteLine(
+            //                $"{position,-5} " +
+            //                $"{author.AuthorId,-5} " +
+            //                $"{fullName,-35} " +
+            //                $"{author.BookCount,10}");
+
+            //            position++;
+            //        }
+            //    }
+
+            //    Console.WriteLine("\nPress any key to continue...");
+            //    Console.ReadKey();
         }
 
         private static void ShowAuthorDetails(IAuthorService service)
