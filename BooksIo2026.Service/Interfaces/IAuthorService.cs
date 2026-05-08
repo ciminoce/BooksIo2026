@@ -9,7 +9,8 @@ namespace BooksIo2026.Service.Interfaces
         Result<List<AuthorListDto>> GetAll();
         Result<AuthorListDto> GetById(int id);
         Result<AuthorUpdateDto> GetForUpdate(int id);
-        //bool Exist(string FirstName, string LastName);
+       
+        Result<AuthorDetailsDto> GetAuthorDetails(int id);
         Result Add(AuthorCreateDto authorDto);
         Result Update(AuthorUpdateDto authorDto);
         Result Delete(int id);

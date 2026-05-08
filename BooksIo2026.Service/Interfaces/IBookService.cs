@@ -11,6 +11,7 @@ namespace BooksIo2026.Service.Interfaces
         Result<List<BookListDto>> GetAll();
         Result<BookUpdateDto> GetForUpdate(int id);
         Result<BookListDto> GetById(int id);
+        Result<BookDetailDto> GetDetail(int id);
         Result Add(BookCreateDto bookDto);
         Result Update(BookUpdateDto bookDto);
         Result Delete(int id);
