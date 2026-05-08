@@ -141,10 +141,7 @@ namespace BooksIo2026.Consola
 
             if (result.IsFailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -165,8 +162,13 @@ namespace BooksIo2026.Consola
 
         private static void ShowBooks(IBookService service)
         {
-            var books = service.GetAll();
-            foreach (var book in books)
+            var booksResult = service.GetAll();
+            if (booksResult.IsFailure)
+            {
+                ShowErrors(booksResult.Errors);
+            }
+            var books = booksResult.Value;
+            foreach (var book in books!)
             {
                 Console.WriteLine($"ID:{book.BookId,4} Title:{book.Title,-40} Author:{book.AuthorName,-30} Publisher:{book.PublisherName,-10}");
             }
@@ -189,17 +191,16 @@ namespace BooksIo2026.Consola
                 return;
             }
 
-            var book = service.GetForUpdate(bookId);
+            var bookResult = service.GetForUpdate(bookId);
 
-            if (book == null)
+            if (bookResult.IsFailure)
             {
-                Console.WriteLine("Book not found");
-                Console.ReadLine();
+                ShowErrors(bookResult.Errors);
                 return;
             }
-
+            var book = bookResult.Value;
             // 🔹 Title
-            Console.Write($"Title ({book.Title}): ");
+            Console.Write($"Title ({book!.Title}): ");
             var input = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(input))
                 book.Title = input;
@@ -245,8 +246,7 @@ namespace BooksIo2026.Consola
 
             if (result.IsFailure)
             {
-                foreach (var error in result.Errors)
-                    Console.WriteLine(error);
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -280,12 +280,11 @@ namespace BooksIo2026.Consola
                 return;
             }
 
-            var result = service.Delete(bookId);
+            var bookResult = service.Delete(bookId);
 
-            if (result.IsFailure)
+            if (bookResult.IsFailure)
             {
-                foreach (var error in result.Errors)
-                    Console.WriteLine(error);
+                ShowErrors(bookResult.Errors);
             }
             else
             {
@@ -347,64 +346,57 @@ namespace BooksIo2026.Consola
             Console.Write("Select an ID to update:");
             var publisherId = int.Parse(Console.ReadLine()!);
 
-            var publisherToUpdate = service.GetForUpdate(publisherId);
-            if (publisherToUpdate != null)
+            var publisherResult = service.GetForUpdate(publisherId);
+            if (publisherResult.IsFailure)
             {
+                ShowErrors(publisherResult.Errors);
+                return;
+            }
+            var publisherToUpdate = publisherResult.Value;
+            Console.Write("Name (current: {0}): ", publisherToUpdate.Name);
+            var input = Console.ReadLine();
+            if (!string.IsNullOrEmpty(input))
+            {
+                publisherToUpdate.Name = input;
+            }
 
+            Console.Write("Country (current: {0}): ", publisherToUpdate.Country);
+            input = Console.ReadLine();
+            if (!string.IsNullOrEmpty(input))
+            {
+                publisherToUpdate.Country = input;
+            }
 
-                Console.Write("Name (current: {0}): ", publisherToUpdate.Name);
-                var input = Console.ReadLine();
-                if (!string.IsNullOrEmpty(input))
-                {
-                    publisherToUpdate.Name = input;
-                }
+            Console.Write("Founded Date (current: {0}, yyyy-mm-dd): ", publisherToUpdate.FoundedDate.ToString("yyyy-MM-dd"));
+            input = Console.ReadLine();
+            if (DateTime.TryParse(input, out DateTime date))
+            {
+                publisherToUpdate.FoundedDate = date;
+            }
 
-                Console.Write("Country (current: {0}): ", publisherToUpdate.Country);
-                input = Console.ReadLine();
-                if (!string.IsNullOrEmpty(input))
-                {
-                    publisherToUpdate.Country = input;
-                }
+            Console.Write("Email (current: {0}): ", publisherToUpdate.Email);
+            input = Console.ReadLine();
+            if (!string.IsNullOrEmpty(input))
+            {
+                publisherToUpdate.Email = input;
+            }
 
-                Console.Write("Founded Date (current: {0}, yyyy-mm-dd): ", publisherToUpdate.FoundedDate.ToString("yyyy-MM-dd"));
-                input = Console.ReadLine();
-                if (DateTime.TryParse(input, out DateTime date))
-                {
-                    publisherToUpdate.FoundedDate = date;
-                }
+            Console.Write("Is Active (current: {0}, true/false): ", publisherToUpdate.IsActive);
+            input = Console.ReadLine();
+            if (bool.TryParse(input, out bool isActive))
+            {
+                publisherToUpdate.IsActive = isActive;
+            }
 
-                Console.Write("Email (current: {0}): ", publisherToUpdate.Email);
-                input = Console.ReadLine();
-                if (!string.IsNullOrEmpty(input))
-                {
-                    publisherToUpdate.Email = input;
-                }
-
-                Console.Write("Is Active (current: {0}, true/false): ", publisherToUpdate.IsActive);
-                input = Console.ReadLine();
-                if (bool.TryParse(input, out bool isActive))
-                {
-                    publisherToUpdate.IsActive = isActive;
-                }
-
-                var result = service.Update(publisherToUpdate);
-                if (result.IsFailure)
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine(error);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Publisher updated successfully!!!");
-                }
+            var result = service.Update(publisherToUpdate);
+            if (result.IsFailure)
+            {
+                ShowErrors(result.Errors);
             }
             else
             {
-                Console.WriteLine("Publisher does not exist");
+                Console.WriteLine("Publisher updated successfully!!!");
             }
-            Console.WriteLine("Press any key to continue");
             Console.ReadLine();
         }
 
@@ -417,38 +409,33 @@ namespace BooksIo2026.Consola
             Console.Write("Select an ID to delete:");
             var publisherId = int.Parse(Console.ReadLine()!);
 
-            var publisherToDelete = service.GetById(publisherId);
-            if (publisherToDelete != null)
+            var publisherResult = service.GetById(publisherId);
+            if (publisherResult.IsFailure)
             {
-                Console.Write($"Are you sure to delete {publisherToDelete.Name} (y/n)?");
-                var response = Console.ReadLine();
-                if (response!.ToLower() == "y")
+                ShowErrors(publisherResult.Errors);
+                return;
+            }
+            var publisherToDelete = publisherResult.Value;
+            Console.Write($"Are you sure to delete {publisherToDelete!.Name} (y/n)?");
+            var response = Console.ReadLine();
+            if (response!.ToLower() == "y")
+            {
+                var result = service.Delete(publisherToDelete.PublisherId);
+                if (result.IsFailure)
                 {
-                    var result = service.Delete(publisherToDelete.PublisherId);
-                    if (result.IsFailure)
-                    {
-                        foreach (var error in result.Errors)
-                        {
-                            Console.WriteLine(error);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Publisher successfully deleted!!!");
-
-                    }
-
+                    ShowErrors(result.Errors);
                 }
                 else
                 {
-                    Console.WriteLine("Cancelled by user!!!");
+                    Console.WriteLine("Publisher successfully deleted!!!");
+
                 }
+
             }
             else
             {
-                Console.WriteLine("Author does not exist");
+                Console.WriteLine("Cancelled by user!!!");
             }
-            Console.WriteLine("Key to continue");
             Console.ReadLine();
         }
 
@@ -476,10 +463,7 @@ namespace BooksIo2026.Consola
             var result = service.Add(dto);
             if (result.IsFailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -503,8 +487,14 @@ namespace BooksIo2026.Consola
 
         private static void ShowPublishers(IPublisherService service)
         {
-            var publishers = service.GetAll();
-            foreach (var publisher in publishers)
+            var publishersResult = service.GetAll();
+            if (publishersResult.IsFailure)
+            {
+                ShowErrors(publishersResult.Errors);
+                return;
+            }
+            var publishers = publishersResult.Value;
+            foreach (var publisher in publishers!)
             {
                 Console.WriteLine($"ID:{publisher.PublisherId,4} Publisher:{publisher.Name,-30} Country:{publisher.Country,-30}");
             }
@@ -563,55 +553,64 @@ namespace BooksIo2026.Consola
 
             var authorId = int.Parse(Console.ReadLine()!);
 
-            var authorToUpdate = service.GetForUpdate(authorId);
-            if (authorToUpdate != null)
+            var authorResult = service.GetForUpdate(authorId);
+            if (authorResult.IsFailure)
             {
-                Console.WriteLine($"Author to Update: {authorToUpdate.FirstName} {authorToUpdate.LastName}");
+                ShowErrors(authorResult.Errors);
+                return;
+            }
+            var authorToUpdate = authorResult.Value;
+            Console.WriteLine($"Author to Update: {authorToUpdate!.FirstName} {authorToUpdate.LastName}");
 
-                Console.Write("New First Name (ENTER to keep the same):");
-                var inputFirstName = Console.ReadLine();
-                var newFirstName = !string
-                    .IsNullOrWhiteSpace(inputFirstName)
-                    ? inputFirstName : authorToUpdate.FirstName;
+            Console.Write("New First Name (ENTER to keep the same):");
+            var inputFirstName = Console.ReadLine();
+            var newFirstName = !string
+                .IsNullOrWhiteSpace(inputFirstName)
+                ? inputFirstName : authorToUpdate.FirstName;
 
-                Console.Write("New Last Name (ENTER to keep the same):");
-                var inputLastName = Console.ReadLine();
-                var newLastName = !string
-                    .IsNullOrWhiteSpace(inputLastName)
-                    ? inputLastName : authorToUpdate.LastName;
+            Console.Write("New Last Name (ENTER to keep the same):");
+            var inputLastName = Console.ReadLine();
+            var newLastName = !string
+                .IsNullOrWhiteSpace(inputLastName)
+                ? inputLastName : authorToUpdate.LastName;
 
-                Console.Write("Confirm the changes?(y/n):");
-                var response = Console.ReadLine();
-                if (response!.ToLower() == "y")
+            Console.Write("Confirm the changes?(y/n):");
+            var response = Console.ReadLine();
+            if (response!.ToLower() == "y")
+            {
+                authorToUpdate.FirstName = newFirstName;
+                authorToUpdate.LastName = newLastName;
+
+                var result = service.Update(authorToUpdate);
+                if (result.IsFailure)
                 {
-                    authorToUpdate.FirstName = newFirstName;
-                    authorToUpdate.LastName = newLastName;
-
-                    var result = service.Update(authorToUpdate);
-                    if (result.IsFailure)
+                    foreach (var error in result.Errors)
                     {
-                        foreach (var error in result.Errors)
-                        {
-                            Console.WriteLine(error);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Author successfully updated!!!");
-
+                        Console.WriteLine(error);
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Cancelled by user");
+                    Console.WriteLine("Author successfully updated!!!");
+
                 }
             }
             else
             {
-                Console.WriteLine("Author does not exist");
+                Console.WriteLine("Cancelled by user");
             }
             Console.WriteLine("Key to continue");
             Console.ReadLine();
+
+        }
+
+        private static void ShowErrors(List<string> errors)
+        {
+            foreach (var error in errors)
+            {
+                Console.WriteLine(error);
+            }
+            Console.WriteLine("Press any key to continue...");
         }
 
         private static void DeleteAuthor(IAuthorService service)
@@ -623,36 +622,32 @@ namespace BooksIo2026.Consola
             Console.Write("Select an ID to delete:");
             var authorId = int.Parse(Console.ReadLine()!);
 
-            var authorToDelete = service.GetById(authorId);
-            if (authorToDelete != null)
+            var authorResult = service.GetById(authorId);
+            if (authorResult.IsFailure)
             {
-                Console.Write($"Are you sure to delete {authorToDelete.FirstName} {authorToDelete.LastName} (y/n)?");
-                var response = Console.ReadLine();
-                if (response!.ToLower() == "y")
+                ShowErrors(authorResult.Errors);
+                return;
+            }
+            var authorToDelete = authorResult.Value;
+            Console.Write($"Are you sure to delete {authorToDelete!.FullName} (y/n)?");
+            var response = Console.ReadLine();
+            if (response!.ToLower() == "y")
+            {
+                var result = service.Delete(authorToDelete.AuthorId);
+                if (result.IsFailure)
                 {
-                    var result = service.Delete(authorToDelete.AuthorId);
-                    if (result.IsFailure)
-                    {
-                        foreach (var error in result.Errors)
-                        {
-                            Console.WriteLine(error);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Author successfully deleted!!!");
-
-                    }
-
+                    ShowErrors(result.Errors);
                 }
                 else
                 {
-                    Console.WriteLine("Cancelled by user!!!");
+                    Console.WriteLine("Author successfully deleted!!!");
+
                 }
+
             }
             else
             {
-                Console.WriteLine("Author does not exist");
+                Console.WriteLine("Cancelled by user!!!");
             }
             Console.WriteLine("Key to continue");
             Console.ReadLine();
@@ -674,10 +669,7 @@ namespace BooksIo2026.Consola
             var result = service.Add(authorDto);
             if (result.IsFailure)
             {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine(error);
-                }
+                ShowErrors(result.Errors);
             }
             else
             {
@@ -701,8 +693,14 @@ namespace BooksIo2026.Consola
 
         private static void ShowAuthors(IAuthorService service)
         {
-            var authors = service.GetAll();
-            foreach (var author in authors)
+            var authorsResult = service.GetAll();
+            if (authorsResult.IsFailure)
+            {
+                ShowErrors(authorsResult.Errors);
+                return;
+            }
+            var authors = authorsResult.Value;
+            foreach (var author in authors!)
             {
                 Console.WriteLine($"ID:{author.AuthorId,4} Author:{author.FullName,-30}");
             }
